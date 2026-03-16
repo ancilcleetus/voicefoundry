@@ -77,7 +77,7 @@ Initialized a git repository.
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
 ## Shadcn => A set of beautifully designed components that you can customize, extend, and build on
-npx shadcn@latest --version Should print "shadcn@4.0.8".
+npx shadcn@latest --version # Should print "shadcn@4.0.8".
 
 npx shadcn@3.8.5 init
 
@@ -96,6 +96,19 @@ npx shadcn@3.8.5 init
 
 Success! Project initialization completed.
 You may now add components.
+
+## Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
+npm install shadcn@3.8.5
+
+## Shadcn => Add button
+npx shadcn@3.8.5 add button
+
+✔ Checking registry.
+✔ Installing dependencies.
+✔ Created 1 file:
+  - src/components/ui/button.tsx
+  
+  
 
 
 # References:
