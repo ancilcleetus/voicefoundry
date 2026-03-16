@@ -193,6 +193,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ## layout.tsx => Replaced Geist Sans font with Inter font, added Toaster; page.tsx => Added toast on button click; Updated Setup.md; Built and verified working app in local
 
+## use-mobile.ts => Update MOBILE_BREAKPOINT from 768 to 1024; Updated globals.css; Updated Setup.md; Built and verified working app in local
+
 
 # References:
 1. https://nodejs.org/en/download
