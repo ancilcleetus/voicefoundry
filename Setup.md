@@ -76,9 +76,30 @@ Initialized a git repository.
 
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
+## Shadcn => A set of beautifully designed components that you can customize, extend, and build on
+npx shadcn@latest --version Should print "shadcn@4.0.8".
+
+npx shadcn@3.8.5 init
+
+✔ Preflight checks.
+✔ Verifying framework. Found Next.js.
+✔ Validating Tailwind CSS config. Found v4.
+✔ Validating import alias.
+✔ Which color would you like to use as the base color? › Neutral
+✔ Writing components.json.
+✔ Checking registry.
+✔ Updating CSS variables in src/app/globals.css
+✔ Updating src/app/globals.css
+✔ Installing dependencies.
+✔ Created 1 file:
+  - src/lib/utils.ts
+
+Success! Project initialization completed.
+You may now add components.
+
 
 # References:
 1. https://nodejs.org/en/download
 2. https://nextjs.org/docs/app/getting-started/installation#quick-start
-
+3. https://ui.shadcn.com/
 
