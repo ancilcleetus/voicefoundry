@@ -212,6 +212,8 @@ npm install @clerk/nextjs
 
 ### Clerk Dashboard => Enable Organizations => Select 'Membership Required' => Click 'Enable'; We now have secure authentication & multi-tenancy in the VoiceFoundry app; Middleware Flow => User can only use the app if they login and select an organization
 
+### src/app/page.tsx => Added 'Welcome to VoiceFoundry' message, OrganizationSwitcher and UserButton in welcome page
+
 # References:
 1. https://nodejs.org/en/download
 2. https://nextjs.org/docs/app/getting-started/installation#quick-start
