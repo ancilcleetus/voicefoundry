@@ -208,6 +208,7 @@ npm install @clerk/nextjs
 
 ### Added src/proxy.ts (for Next.js version before 16, it was called middleware.ts); proxy.ts => added rules for public & protected routes
 
+### Added Sign-in, Sign-up pages (based on Clerk documentation) and org-selection page
 
 # References:
 1. https://nodejs.org/en/download
