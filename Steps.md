@@ -204,6 +204,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ### Add authentication to our Nextjs app using Clerk
 npm install @clerk/nextjs
 
+### layout.tsx => Import ClerkProvider & wrap ClerkProvider around entire app; Clerk warning: You are running in keyless mode => Create VoiceFoundry application in Clerk with Email & Google Login and copy Clerk API keys, then paste those keys in a new .env file
+
 
 # References:
 1. https://nodejs.org/en/download
