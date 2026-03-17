@@ -1,33 +1,37 @@
 # VoiceFoundry: SaaS platform for Custom Voice Generation from Text
 
-## Download and install nvm:
+## Installation of Libraries and Dependencies
+
+### Download and install nvm:
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 
-## in lieu of restarting the shell
+### in lieu of restarting the shell
 \. "$HOME/.nvm/nvm.sh"
 
-## Download and install Node.js:
+### Download and install Node.js:
 nvm install 24
 
-## Verify npm version:
+### Verify npm version:
 npm -v # Should print "11.9.0".
 
-## Verify npx version:
+### Verify npx version:
 npx -v # Should print "11.9.0".
 
-## Verify nvm version:
+### Verify nvm version:
 nvm -v # Should print "0.40.4".
 
-## Verify the Node.js version:
+### Verify the Node.js version:
 node -v # Should print "v24.14.0".
 
-## Verify the git version:
+### Verify the git version:
 git --version # Should print "git version 2.25.1".
 
-## Go to project parent directory
+### Go to project parent directory
 cd ~/Work/GitHub
 
-## Create Nextjs app
+## Next.js Setup
+
+### Create Next.js app
 npx create-next-app@16.1.6 voicefoundry
 
 ✔ Would you like to use the recommended Next.js defaults? › No, customize settings
@@ -76,7 +80,7 @@ Initialized a git repository.
 
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
-## Shadcn => A set of beautifully designed components that you can customize, extend, and build on
+### Shadcn => A set of beautifully designed components that you can customize, extend, and build on
 npx shadcn@latest --version # Should print "shadcn@4.0.8".
 
 npx shadcn@3.8.5 init
@@ -97,10 +101,10 @@ npx shadcn@3.8.5 init
 Success! Project initialization completed.
 You may now add components.
 
-## Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
+### Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
 npm install shadcn@3.8.5
 
-## Shadcn => Add button
+### Shadcn => Add button
 npx shadcn@3.8.5 add button
 
 ✔ Checking registry.
@@ -108,7 +112,7 @@ npx shadcn@3.8.5 add button
 ✔ Created 1 file:
   - src/components/ui/button.tsx
   
-## Shadcn => Add all components
+### Shadcn => Add all components (we can remove unnecessary components later)
 npx shadcn@3.8.5 add --all
 
 ⠼ Checking registry.Circular dependency detected in registry items
@@ -191,9 +195,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-## layout.tsx => Replaced Geist Sans font with Inter font, added Toaster; page.tsx => Added toast on button click; Updated Setup.md; Built and verified working app in local
+### layout.tsx => Replaced Geist Sans font with Inter font, added Toaster; page.tsx => Added toast on button click; Updated Steps.md; Built and verified working app in local
 
-## use-mobile.ts => Update MOBILE_BREAKPOINT from 768 to 1024; Updated globals.css; Updated Setup.md; Built and verified working app in local
+### use-mobile.ts => Update MOBILE_BREAKPOINT from 768 to 1024; Updated globals.css; Updated Steps.md; Built and verified working app in local
+
+## Clerk Authentication
+
+### Add authentication to our Nextjs app using Clerk
+npm install @clerk/nextjs
 
 
 # References:
