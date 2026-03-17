@@ -206,6 +206,8 @@ npm install @clerk/nextjs
 
 ### layout.tsx => Import ClerkProvider & wrap ClerkProvider around entire app; Clerk warning: You are running in keyless mode => Create VoiceFoundry application in Clerk with Email & Google Login and copy Clerk API keys, then paste those keys in a new .env file
 
+### Added src/proxy.ts (for Next.js version before 16, it was called middleware.ts); proxy.ts => added rules for public & protected routes
+
 
 # References:
 1. https://nodejs.org/en/download
