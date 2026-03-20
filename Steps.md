@@ -1,4 +1,4 @@
-# VoiceFoundry: SaaS platform for Custom Voice Generation from Text
+# VoiceFoundry: Step-by-Step Development Log
 
 ## Installation of Libraries and Dependencies
 
