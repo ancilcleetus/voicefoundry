@@ -12,19 +12,19 @@
 * `nvm install 24`
 
 ### Verify npm version:
-* `npm -v` # Should print "11.9.0"
+* `npm -v`  # Should print "11.9.0"
 
 ### Verify npx version:
-* `npx -v` # Should print "11.9.0"
+* `npx -v`  # Should print "11.9.0"
 
 ### Verify nvm version:
-* `nvm -v` # Should print "0.40.4"
+* `nvm -v`  # Should print "0.40.4"
 
 ### Verify the Node.js version:
-* `node -v` # Should print "v24.14.0"
+* `node -v`  # Should print "v24.14.0"
 
 ### Verify the git version:
-* `git --version` # Should print "git version 2.25.1"
+* `git --version`  # Should print "git version 2.25.1"
 
 ### Go to project parent directory
 * `cd ~/Work/GitHub`
@@ -81,7 +81,7 @@ Initialized a git repository.
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
 ### Shadcn => A set of beautifully designed components that you can customize, extend, and build on
-* `npx shadcn@latest --version` # Should print "shadcn@4.0.8"
+* `npx shadcn@latest --version`  # Should print "shadcn@4.0.8"
 
 * `npx shadcn@3.8.5 init`
 
