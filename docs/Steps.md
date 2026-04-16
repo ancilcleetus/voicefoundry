@@ -36,6 +36,7 @@
 #### Create Next.js app
 * `npx create-next-app@16.1.6 voicefoundry`
 
+```
 ✔ Would you like to use the recommended Next.js defaults? › No, customize settings
 ✔ Would you like to use TypeScript? Yes
 ✔ Which linter would you like to use? ESLint
@@ -81,12 +82,14 @@ Generating route types...
 Initialized a git repository.
 
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
+```
 
 #### Shadcn => A set of beautifully designed components that you can customize, extend, and build on
 * `npx shadcn@latest --version`  # Should print "shadcn@4.0.8"
 
 * `npx shadcn@3.8.5 init`
 
+```
 ✔ Preflight checks.
 ✔ Verifying framework. Found Next.js.
 ✔ Validating Tailwind CSS config. Found v4.
@@ -102,6 +105,7 @@ Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
 Success! Project initialization completed.
 You may now add components.
+```
 
 #### Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
 * `npm install shadcn@3.8.5`
@@ -109,14 +113,17 @@ You may now add components.
 #### Shadcn => Add button
 * `npx shadcn@3.8.5 add button`
 
+```
 ✔ Checking registry.
 ✔ Installing dependencies.
 ✔ Created 1 file:
   - src/components/ui/button.tsx
+```
   
 #### Shadcn => Add all components (we can remove unnecessary components later)
 * `npx shadcn@3.8.5 add --all`
 
+```
 ⠼ Checking registry.Circular dependency detected in registry items
 ✔ Checking registry.
 ✔ Updating CSS variables in src/app/globals.css
@@ -182,6 +189,7 @@ You may now add components.
   - src/components/ui/button.tsx
 
 The `tooltip` component has been added. Remember to wrap your app with the `TooltipProvider` component.
+```
 
 ```tsx title="app/layout.tsx"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -234,6 +242,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 #### Create Prisma Postgres database
 * `npx prisma init --db`
 
+```
 This will create a project for you on console.prisma.io and requires you to be authenticated.
 ✔ Would you like to authenticate? Yes
 Let's set up your Prisma Postgres database!
@@ -248,20 +257,32 @@ We created an initial schema.prisma file and a .env file with your DATABASE_URL 
 Go to https://pris.ly/ppg-init for detailed instructions.
 
 1. Define your database schema
-Open the schema.prisma file and define your first models. Check the docs if you need inspiration: https://pris.ly/ppg-init.
+
+    Open the `schema.prisma` file and define your first models. Each model becomes a table in your database. Check the docs if you need inspiration: https://pris.ly/ppg-init.
 
 2. Apply migrations
-Run the following command to create and apply a migration:
-npx prisma migrate dev --name init
+
+    Once you've designed your schema, a migration is the process of actually creating those tables in the real database.
+    
+    Run the following command to create and apply a migration:
+    `npx prisma migrate dev --name init`
+    
+    Every time you change your schema later (add a column, add a new model), you run this command again with a new name (e.g., `npx prisma migrate dev --name add_profile_picture`) and it updates the database safely.
 
 3. Manage your data
-View and edit your data locally by running this command:
-npx prisma studio
-...or online in Console:
-https://console.prisma.io/cmo1763qd0ah50zfb0z2qvkvu/cmo17dai90bfd14dw1gbt24b9/cmo17dai90bfb14dwqeyrixpo/studio
+
+    Prisma Studio is a visual interface — like a simple spreadsheet view of your database — where you can see, add, edit, and delete rows without writing any code or SQL.
+    
+    View and edit your data locally by running this command:
+    `npx prisma studio`
+    
+    ...or online in Console:
+    https://console.prisma.io/cmo1763qd0ah50zfb0z2qvkvu/cmo17dai90bfd14dw1gbt24b9/cmo17dai90bfb14dwqeyrixpo/studio
 
 4. Send queries from your app
-To access your database from a JavaScript/TypeScript app, you need to use Prisma ORM. Go here for step-by-step instructions: https://pris.ly/ppg-init
+
+    To access your database from a JavaScript/TypeScript app, you need to use Prisma ORM. Go here for step-by-step instructions: https://pris.ly/ppg-init
+```
 
 # References:
 1. https://nodejs.org/en/download
