@@ -29,9 +29,11 @@
 ### Go to project parent directory
 * `cd ~/Work/GitHub`
 
-## Next.js Setup
+## Project Setup, Auth, DB
 
-### Create Next.js app
+### Next.js Setup
+
+#### Create Next.js app
 * `npx create-next-app@16.1.6 voicefoundry`
 
 ✔ Would you like to use the recommended Next.js defaults? › No, customize settings
@@ -80,7 +82,7 @@ Initialized a git repository.
 
 Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 
-### Shadcn => A set of beautifully designed components that you can customize, extend, and build on
+#### Shadcn => A set of beautifully designed components that you can customize, extend, and build on
 * `npx shadcn@latest --version`  # Should print "shadcn@4.0.8"
 
 * `npx shadcn@3.8.5 init`
@@ -101,10 +103,10 @@ Success! Created voicefoundry at /home/ancil/Work/GitHub/voicefoundry
 Success! Project initialization completed.
 You may now add components.
 
-### Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
+#### Install shadcn@3.8.5 to force shadcn version as 3.8.5 in package.json & package-lock.json
 * `npm install shadcn@3.8.5`
 
-### Shadcn => Add button
+#### Shadcn => Add button
 * `npx shadcn@3.8.5 add button`
 
 ✔ Checking registry.
@@ -112,7 +114,7 @@ You may now add components.
 ✔ Created 1 file:
   - src/components/ui/button.tsx
   
-### Shadcn => Add all components (we can remove unnecessary components later)
+#### Shadcn => Add all components (we can remove unnecessary components later)
 * `npx shadcn@3.8.5 add --all`
 
 ⠼ Checking registry.Circular dependency detected in registry items
@@ -195,24 +197,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-### layout.tsx => Replaced Geist Sans font with Inter font, added Toaster; page.tsx => Added toast on button click; Updated Steps.md; Built and verified working app in local
+#### layout.tsx => Replaced Geist Sans font with Inter font, added Toaster; page.tsx => Added toast on button click; Updated Steps.md; Built and verified working app in local
 
-### use-mobile.ts => Update MOBILE_BREAKPOINT from 768 to 1024; Updated globals.css; Updated Steps.md; Built and verified working app in local
+#### use-mobile.ts => Update MOBILE_BREAKPOINT from 768 to 1024; Updated globals.css; Updated Steps.md; Built and verified working app in local
 
-## Clerk Authentication
+### Clerk Authentication
 
-### Add authentication to our Nextjs app using Clerk
+#### Add authentication to our Nextjs app using Clerk
 * `npm install @clerk/nextjs`
 
-### layout.tsx => Import ClerkProvider & wrap ClerkProvider around entire app; Clerk warning: You are running in keyless mode => Create VoiceFoundry application in Clerk with Email & Google Login and copy Clerk API keys, then paste those keys in a new .env file
+#### layout.tsx => Import ClerkProvider & wrap ClerkProvider around entire app; Clerk warning: You are running in keyless mode => Create VoiceFoundry application in Clerk with Email & Google Login and copy Clerk API keys, then paste those keys in a new .env file
 
-### Added src/proxy.ts (for Next.js version before 16, it was called middleware.ts); proxy.ts => added rules for public & protected routes
+#### Added src/proxy.ts (for Next.js version before 16, it was called middleware.ts); proxy.ts => added rules for public & protected routes
 
-### Added Sign-in, Sign-up pages (based on Clerk documentation) and org-selection page
+#### Added Sign-in, Sign-up pages (based on Clerk documentation) and org-selection page
 
-### Clerk Dashboard => Enable Organizations => Select 'Membership Required' => Click 'Enable'; We now have secure authentication & multi-tenancy in the VoiceFoundry app; Middleware Flow => User can only use the app if they login and select an organization
+#### Clerk Dashboard => Enable Organizations => Select 'Membership Required' => Click 'Enable'; We now have secure authentication & multi-tenancy in the VoiceFoundry app; Middleware Flow => User can only use the app if they login and select an organization
 
-### src/app/page.tsx => Added 'Welcome to VoiceFoundry' message, OrganizationSwitcher and UserButton in welcome page
+#### src/app/page.tsx => Added 'Welcome to VoiceFoundry' message, OrganizationSwitcher and UserButton in welcome page
+
+### Prisma Database
+
+#### Install dependencies
+* Step 1: `npm install @prisma/adapter-pg @prisma/client @t3-oss/env-nextjs pg`
+  * `pg` => The core PostgreSQL client for Node.js (node-postgres)
+  * `@prisma/client` => The core Prisma ORM client for database access
+  * `@prisma/adapter-pg` => PostgreSQL driver adapter for Prisma ORM
+  * `@t3-oss/env-nextjs` => Type-safe environment variable validation for Next.js from the T3 stack; breaks the app if we forget to add env variables
+* Step 2: `npm install --save-dev prisma @types/pg dotenv tsx`
+  * Dev dependencies (Only required during development, no need in runtime)
+  * `prisma` => CLI tool used by developers for commands like `npx prisma init` etc, deployed app just uses `@prisma/client`
+  * `@types/pg` => TypeScript type definitions for the `pg` package (since `pg` written in JavaScript with no TypeScript types), Only needed during development/compilation — TypeScript is stripped at runtime
+  * `dotenv` => Loads environment variables from a `.env` file into `process.env`, Not needed in production — platforms like Vercel, Railway, or Docker inject env vars directly into the environment without needing a `.env` file
+  * `tsx` => TypeScript Execute — runs `.ts` / `.tsx` files directly without compiling, Not needed at runtime — production runs compiled JS, not raw TypeScript
 
 # References:
 1. https://nodejs.org/en/download
