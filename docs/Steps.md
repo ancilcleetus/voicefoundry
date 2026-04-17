@@ -306,6 +306,17 @@ prisma/migrations/
 Your database is now in sync with your schema.
 ```
 
+#### Generate (or Update) the Prisma Client (TypeScript/JavaScript code) that lets our app talk to the database
+* `npx prisma generate`
+
+```
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+
+✔ Generated Prisma Client (7.7.0) to ./src/generated/prisma in 133ms
+```
+
 
 # References:
 1. https://nodejs.org/en/download
