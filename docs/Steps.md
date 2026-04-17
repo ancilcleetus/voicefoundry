@@ -317,6 +317,112 @@ Prisma schema loaded from prisma/schema.prisma.
 ✔ Generated Prisma Client (7.7.0) to ./src/generated/prisma in 133ms
 ```
 
+#### Create src/lib/db.ts
+
+```
+import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
+});
+
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+const prisma = globalForPrisma.prisma || new PrismaClient({adapter});
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export { prisma };
+```
+
+##### The problem this file solves
+
+  In Next.js development, every time you save a file, the server **restarts and re-runs your code**. Without this file, your app would create **hundreds of new database connections** during development — which is wasteful and can crash your database.
+
+  This file uses Prisma Singleton pattern and solves this by creating `PrismaClient` once and sharing it everywhere, ensuring **only one Prisma connection exists at a time**.
+
+##### Line by line explanation
+
+1. Imports
+
+```ts
+import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+```
+- `PrismaClient` — the auto-generated database client (from `prisma generate`)
+- `PrismaPg` — the adapter that tells Prisma to use the `pg` (PostgreSQL) driver to actually connect
+
+2. Setting up the connection
+
+```ts
+const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
+});
+```
+
+- Creates a PostgreSQL connection using the `DATABASE_URL` from your `.env` file
+- Think of this as **dialing the phone number of your database** — the connection string is the number, and the adapter is the phone
+
+3. The global variable trick
+​
+```ts
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+```
+
+- `global` is a special object in Node.js that **persists across hot reloads** (server restarts in development)
+- This line just says: "treat `global` as an object that may have a `prisma` property on it"
+- Think of `global` like a **sticky note board** that survives even when the server restarts — you can stick your Prisma client on it so it doesn't get recreated
+
+4. Reuse or create the client
+
+```ts
+const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
+```
+
+This is the core logic. In plain English:
+
+> "If a Prisma client already exists on the global sticky board, reuse it. If not, create a brand new one."
+
+- First server start → `globalForPrisma.prisma` is empty → creates a **new** `PrismaClient`
+- After a hot reload → `globalForPrisma.prisma` already exists → **reuses** the existing one
+
+This prevents multiple connections piling up.
+
+5. Save to global in development only
+​
+```ts
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+- **In development:** saves the Prisma client to the global sticky board so it survives hot reloads
+- **In production:** skips this — in production the server doesn't hot reload, so a new `PrismaClient` is created once and lives for the lifetime of the server naturally
+
+6. Export
+
+```ts
+export { prisma };
+```
+
+Makes the single shared Prisma instance available to your entire app. Every file that does `import { prisma } from '@/lib/db'` gets the **same one connection**, not a new one.
+
+##### The full picture simply
+
+```
+First load
+    │
+    ├── global.prisma exists? 
+    │       NO → Create new PrismaClient → Save to global
+    │
+Hot reload (dev only)
+    │
+    ├── global.prisma exists?
+    │       YES → Reuse it → No new connection created ✅
+    │
+Production
+    │
+    └── Server starts once → One PrismaClient → Lives forever ✅
+```
 
 # References:
 1. https://nodejs.org/en/download
