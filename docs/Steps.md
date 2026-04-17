@@ -286,6 +286,26 @@ Go to https://pris.ly/ppg-init for detailed instructions.
 
 #### Updated schema.prisma with enum VoiceVariant, VoiceCategory; models Voice, Generation
 
+#### Create first migration of Prisma Postgres DB with name 'init'
+* `npx prisma migrate dev --name init`
+
+```
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.prisma.io:5432"
+
+Applying migration `20260417081233_init`
+
+The following migration(s) have been created and applied from new schema changes:
+
+prisma/migrations/
+  └─ 20260417081233_init/
+    └─ migration.sql
+
+Your database is now in sync with your schema.
+```
+
 
 # References:
 1. https://nodejs.org/en/download
