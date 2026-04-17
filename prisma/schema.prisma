@@ -11,3 +11,72 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// Every voice in our project can either be a SYSTEM voice or a CUSTOM voice
+enum VoiceVariant {
+  SYSTEM
+  CUSTOM
+}
+
+// This list is from the dataset of voices
+enum VoiceCategory {
+  AUDIOBOOK
+  CONVERSATIONAL
+  CUSTOMER_SERVICE
+  GENERAL
+  NARRATIVE
+  CHARACTERS
+  MEDITATION
+  MOTIVATIONAL
+  PODCAST
+  ADVERTISING
+  VOICEOVER
+  CORPORATE
+}
+
+model Voice {
+  id String @id @default(cuid())  // Collision-resistant Unique Identifier cuid() generates a random unique string ID
+  
+  orgId String?  // orgId => Optional for built-in SYSTEM voices, required for CUSTOM voices
+  
+  name        String
+  description String?
+  category    VoiceCategory @default(GENERAL)  // Default category is GENERAL if not specified
+  language    String        @default("en-US")  // Default language is English (United States)
+  variant     VoiceVariant
+  r2ObjectKey String?  // References the R2 object key where audio example of this voice is stored, optional because SYSTEM voices may not have an audio example; Any S3 compatible storage can be used for this, R2 is just an example
+
+  generations Generation[]  // One-to-many relationship with Generation model; one voice can be used in many generations
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([variant])  // Index on variant for efficient querying of SYSTEM vs CUSTOM voices
+  @@index([orgId])  // Index on orgId for efficient querying of voices by organization
+}
+
+// Generations are basically text-to-speech conversion jobs that users create.
+model Generation {
+  id String @id @default(cuid())
+
+  orgId String  // Only organizations can create generations, so orgId is required
+
+  // voice & voiceId are optional because we want users to delete their voices without deleting their generations
+  voiceId String?  // Each generation needs to have a voice assigned to it, but it is optional to allow for the case where voice is deleted after creating the generation
+  voice   Voice? @relation(fields: [voiceId], references: [id], onDelete: SetNull)  // voiceId will be connecting to id in the Voice model; set to null if the voice is deleted
+
+  text              String  // The input text that the user wants to convert to speech
+  voiceName         String  // Preserve voice name for historical record even if the voice is deleted later
+  r2ObjectKey       String?  // We will create a generation before the upload finishes; R2 object key doesn't exist => unfinished, R2 object key exists => it is uploaded and ready to listen to
+  // Parameters for the TTS model
+  temperature       Float
+  topP              Float
+  topK              Int
+  repetitionPenalty Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orgId])  // Index on orgId for efficient querying of generations by organization
+  @@index([voiceId])  // Index on voiceId for efficient querying of generations by voice
+}

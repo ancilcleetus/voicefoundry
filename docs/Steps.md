@@ -284,6 +284,9 @@ Go to https://pris.ly/ppg-init for detailed instructions.
     To access your database from a JavaScript/TypeScript app, you need to use Prisma ORM. Go here for step-by-step instructions: https://pris.ly/ppg-init
 ```
 
+#### Updated schema.prisma with enum VoiceVariant, VoiceCategory; models Voice, Generation
+
+
 # References:
 1. https://nodejs.org/en/download
 2. https://nextjs.org/docs/app/getting-started/installation#quick-start
