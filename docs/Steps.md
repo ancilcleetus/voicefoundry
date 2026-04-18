@@ -798,6 +798,128 @@ User visits /sign-in
 
 #### src/app/page.tsx => Added 'Welcome to VoiceFoundry' message, OrganizationSwitcher and UserButton in welcome page
 
+#### `src/app/page.tsx` — Home Page (Welcome / Auth Verification Page)
+
+```tsx
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+
+export default function Home() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+      <h1 className="text-2xl font-semibold">Welcome to VoiceFoundry</h1>
+      <div className="flex items-center gap-4">
+        <OrganizationSwitcher />
+        <UserButton />
+      </div>
+    </div>
+  );
+}
+```
+
+##### What this file does
+
+`page.tsx` at `src/app/page.tsx` is the **root page** of the Next.js App Router — it renders at the `/` path (the home page). At this stage of development, it serves as a **verification page** to confirm that authentication and multi-tenancy are wired up correctly end-to-end:
+
+- A user can only reach `/` if they are **logged in AND have selected an organization** (enforced by `proxy.ts`)
+- The page renders Clerk's `<OrganizationSwitcher />` and `<UserButton />` components to prove that auth state is fully available
+- This is a **placeholder home page** — the actual VoiceFoundry dashboard will be built here later
+
+##### Line by line explanation
+
+1. Imports
+
+```tsx
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+```
+
+- `OrganizationSwitcher` — pre-built Clerk component that displays the currently selected organization and allows switching between organizations or creating new ones
+- `UserButton` — pre-built Clerk component that displays the logged-in user's avatar and provides a dropdown for profile settings and sign-out
+- Both are imported from `@clerk/nextjs` — they work automatically because `<ClerkProvider>` in `layout.tsx` makes auth state available throughout the app
+
+2. The outer container div
+
+```tsx
+<div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+```
+
+- `flex` — enables flexbox layout
+- `min-h-screen` — minimum height of 100% of the viewport, so the page fills the entire screen
+- `flex-col` — stacks children **vertically** (column direction); without this, `flex` defaults to row direction
+- `items-center` — in a column flex container, this centers children **horizontally**
+- `justify-center` — in a column flex container, this centers children **vertically**
+- `gap-4` — adds 16px of space between each child element (between the `<h1>` and the inner div)
+- `bg-background` — Shadcn/Tailwind CSS variable for the app background color; adapts automatically to light/dark mode
+
+3. The heading
+
+```tsx
+<h1 className="text-2xl font-semibold">Welcome to VoiceFoundry</h1>
+```
+
+- `text-2xl` — sets font size to 24px (Tailwind's `2xl` scale)
+- `font-semibold` — sets font weight to 600 (semi-bold), giving the heading visual prominence without being too heavy
+- This is the app's temporary welcome message — a placeholder until the real dashboard is built
+
+4. The inner container div
+
+```tsx
+<div className="flex items-center gap-4">
+```
+
+- `flex` — horizontal flexbox row (default direction), placing `<OrganizationSwitcher />` and `<UserButton />` side by side
+- `items-center` — vertically aligns both components along the center axis (useful since they may have different heights)
+- `gap-4` — adds 16px of horizontal space between the two Clerk components
+
+5. `<OrganizationSwitcher />`
+
+```tsx
+<OrganizationSwitcher />
+```
+
+- Pre-built Clerk component that renders a **clickable organization selector widget**
+- Shows the logo and name of the currently active organization
+- On click, opens a dropdown that lets the user:
+  - Switch to a different organization they belong to
+  - Create a brand new organization
+- This is the primary multi-tenancy UI element — it is how users navigate between organizations in VoiceFoundry
+- Works out of the box because `<ClerkProvider>` in `layout.tsx` already holds the current org state
+
+6. `<UserButton />`
+
+```tsx
+<UserButton />
+```
+
+- Pre-built Clerk component that renders the **logged-in user's avatar** (profile picture or initials)
+- On click, opens a dropdown that lets the user:
+  - View and edit their profile
+  - Manage their account settings
+  - Sign out
+- Requires zero configuration — Clerk automatically pulls the user's name, email, and avatar from the auth session
+- Works out of the box because `<ClerkProvider>` in `layout.tsx` already holds the current user state
+
+##### The full picture simply
+
+```
+User reaches "/" (home page)
+       │
+       │  (only possible if proxy.ts confirmed: logged in + org selected)
+       ▼
+  page.tsx renders
+       │
+       ├── <h1> Welcome to VoiceFoundry
+       │
+       └── <div> (horizontal row)
+               ├── <OrganizationSwitcher />   ← switch / create orgs
+               └── <UserButton />             ← profile / sign out
+```
+
+This page proves the full auth + multi-tenancy flow is working:
+- ✅ User must be logged in to reach this page (enforced by `proxy.ts`)
+- ✅ User must have an org selected to reach this page (enforced by `proxy.ts`)
+- ✅ `<OrganizationSwitcher />` confirms org state is accessible in components
+- ✅ `<UserButton />` confirms user state is accessible in components
+
 ### Prisma Database
 
 #### Install dependencies
