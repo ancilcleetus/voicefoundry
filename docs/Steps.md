@@ -587,6 +587,213 @@ The result is a **two-layer auth gate** enforced on every request:
 
 #### Added Sign-in, Sign-up pages (based on Clerk documentation) and org-selection page
 
+#### Sign-in, Sign-up and Org-selection pages
+
+##### File structure
+
+```
+src/app/
+├── sign-in/
+│   └── [[...sign-in]]/
+│       └── page.tsx          ← optional catch-all route
+├── sign-up/
+│   └── [[...sign-up]]/
+│       └── page.tsx          ← optional catch-all route
+└── org-selection/
+    └── page.tsx              ← simple static route
+```
+
+##### `src/app/sign-in/[[...sign-in]]/page.tsx`
+
+```tsx
+import { SignIn } from "@clerk/nextjs";
+
+export default function SignInPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <SignIn
+        appearance={{
+          elements: {
+            rootBox: "mx-auto",
+            card: "shadow-lg",
+          },
+        }}
+      />
+    </div>
+  );
+}
+```
+
+##### `src/app/sign-up/[[...sign-up]]/page.tsx`
+
+```tsx
+import { SignUp } from "@clerk/nextjs";
+
+export default function SignUpPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <SignUp
+        appearance={{
+          elements: {
+            rootBox: "mx-auto",
+            card: "shadow-lg",
+          },
+        }}
+      />
+    </div>
+  );
+}
+```
+
+##### `src/app/org-selection/page.tsx`
+
+```tsx
+import { OrganizationList } from "@clerk/nextjs";
+
+export default function OrgSelectionPage() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <OrganizationList
+        hidePersonal
+        afterCreateOrganizationUrl="/"
+        afterSelectOrganizationUrl="/"
+        appearance={{
+          elements: {
+            rootBox: "mx-auto",
+            card: "shadow-lg",
+          },
+        }}
+      />
+    </div>
+  );
+}
+```
+
+##### Why `[[...sign-in]]` and `[[...sign-up]]` — but not for org-selection?
+
+This is the most important structural decision in these three files.
+
+**Clerk's `<SignIn />` and `<SignUp />` components are multi-step flows.** Under the hood, they navigate to sub-paths to handle each step of the auth process:
+
+| Path | What Clerk does there |
+|---|---|
+| `/sign-in` | Main sign-in form |
+| `/sign-in/factor-one` | First factor (password entry) |
+| `/sign-in/factor-two` | Second factor (MFA / OTP) |
+| `/sign-in/sso-callback` | OAuth callback after Google/GitHub login |
+| `/sign-in/reset-password` | Password reset flow |
+| `/sign-up` | Main sign-up form |
+| `/sign-up/verify-email-address` | Email verification step |
+| `/sign-up/continue` | Additional info collection step |
+
+For Next.js to render our `page.tsx` at **all** of these sub-paths, we need a **catch-all route segment** — `[[...sign-in]]`.
+
+**Breaking down the folder name `[[...sign-in]]`:**
+
+| Syntax | Name | Matches |
+|---|---|---|
+| `[slug]` | Dynamic segment | `/sign-in/abc` (one segment only) |
+| `[...slug]` | Required catch-all | `/sign-in/a`, `/sign-in/a/b` — but NOT `/sign-in` itself |
+| `[[...slug]]` | Optional catch-all | `/sign-in`, `/sign-in/a`, `/sign-in/a/b` — all match ✅ |
+
+We use `[[...sign-in]]` (double brackets = **optional** catch-all) because:
+- `/sign-in` itself must work (the root sign-in page)
+- `/sign-in/sso-callback`, `/sign-in/factor-two`, etc. must also work
+
+Without `[[...sign-in]]`, navigating to `/sign-in/sso-callback` (e.g. after clicking "Sign in with Google") would return a **404 error** because Next.js would have no matching page.
+
+**`org-selection` uses a simple `page.tsx` because:**
+- `<OrganizationList />` is a single-step UI — it just shows a list of orgs and lets the user pick one
+- After selecting or creating an org, it redirects to `"/"` immediately
+- There are no multi-step sub-paths to handle, so a plain `page.tsx` is all that is needed
+
+##### Line by line explanation
+
+1. The wrapping div (same in all three pages)
+
+```tsx
+<div className="flex min-h-screen items-center justify-center bg-background">
+```
+
+- `flex` — enables flexbox layout so child elements can be aligned
+- `min-h-screen` — sets minimum height to 100% of the viewport height, ensuring the page fills the screen
+- `items-center` — vertically centers the Clerk component in the middle of the screen
+- `justify-center` — horizontally centers the Clerk component
+- `bg-background` — applies the Shadcn/Tailwind CSS variable for the app's background color (adapts to light/dark mode automatically)
+- Together: the Clerk UI card is **perfectly centered on a full-screen background**
+
+2. The `appearance` prop (same in all three pages)
+
+```tsx
+appearance={{
+  elements: {
+    rootBox: "mx-auto",
+    card: "shadow-lg",
+  },
+}}
+```
+
+- `appearance.elements` — Clerk's customization API that lets you apply CSS classes to specific internal parts of the pre-built Clerk UI components
+- `rootBox: "mx-auto"` — applies `margin: auto` horizontally to the outermost container of the Clerk component, keeping it centered
+- `card: "shadow-lg"` — applies Tailwind's large drop shadow to the Clerk card, giving it depth against the background
+
+3. `<SignIn />` and `<SignUp />` components
+
+```tsx
+<SignIn ... />
+<SignUp ... />
+```
+
+- Pre-built Clerk UI components that render the **complete authentication flow** out of the box
+- Handle email/password login, OAuth (Google, GitHub, etc.), magic links, MFA, email verification — all without any custom code
+- Clerk reads the sign-in/sign-up methods configured in the Clerk Dashboard and renders accordingly
+
+4. `<OrganizationList />` component and its unique props
+
+```tsx
+<OrganizationList
+  hidePersonal
+  afterCreateOrganizationUrl="/"
+  afterSelectOrganizationUrl="/"
+  ...
+/>
+```
+
+- `<OrganizationList />` — pre-built Clerk component that displays all organizations the logged-in user belongs to, plus options to create a new one
+- `hidePersonal` — hides the "Personal account" option from the list; in VoiceFoundry, every user must work within an organization — personal accounts are not allowed
+- `afterCreateOrganizationUrl="/"` — after a user **creates** a new organization, redirect them to the home page `"/"`
+- `afterSelectOrganizationUrl="/"` — after a user **selects** an existing organization, redirect them to the home page `"/"`
+
+##### The full picture simply
+
+```
+User visits /sign-in
+       │
+       ▼
+  [[...sign-in]]/page.tsx renders <SignIn />
+       │
+       ├── User clicks "Sign in with Google"
+       │       │
+       │       ▼
+       │   Clerk navigates to /sign-in/sso-callback
+       │       │
+       │       ▼
+       │   [[...sign-in]]/page.tsx renders again ✅ (catch-all matches)
+       │
+       └── User completes sign-in → Clerk redirects to /org-selection
+                   │
+                   ▼
+             org-selection/page.tsx renders <OrganizationList />
+                   │
+                   ├── User selects an org → redirect to "/"  ✅
+                   └── User creates an org → redirect to "/"  ✅
+```
+
+**Why this design works:**
+- `[[...sign-in]]` and `[[...sign-up]]` ensure Clerk's internal sub-path navigation never hits a 404
+- `org-selection/page.tsx` (simple route) is sufficient because `<OrganizationList />` has no sub-path navigation
+- All three pages are declared as public routes in `proxy.ts` (`isPublicRoute` covers sign-in/sign-up; `isOrgSelectionRoute` covers org-selection) so unauthenticated users can reach them freely
+
 #### Clerk Dashboard => Enable Organizations => Select 'Membership Required' => Click 'Enable'; We now have secure authentication & multi-tenancy in the VoiceFoundry app; Middleware Flow => User can only use the app if they login and select an organization
 
 #### src/app/page.tsx => Added 'Welcome to VoiceFoundry' message, OrganizationSwitcher and UserButton in welcome page
