@@ -383,6 +383,208 @@ Every page in the app automatically gets:
 
 #### Added src/proxy.ts (for Next.js version before 16, it was called middleware.ts); proxy.ts => added rules for public & protected routes
 
+#### `src/proxy.ts` — Authentication & Authorization Middleware
+
+```ts
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);  // Logged out users and non-users can access these routes
+
+const isOrgSelectionRoute = createRouteMatcher(["/org-selection(.*)"]);
+
+export default clerkMiddleware(async (auth, req) => {
+    const { userId, orgId } = await auth();
+
+    // Allow public routes
+    if (isPublicRoute(req)) {
+        return NextResponse.next();
+    }
+
+    // Protect non-public routes
+    if (!userId) {
+        await auth.protect();
+    }
+
+    // Allow org selection page for logged in users
+    if (isOrgSelectionRoute(req)) {
+        return NextResponse.next();
+    }
+
+    // For all protected routes (all routes except sign-in, sign-up and org-selection),
+    // ensure org is selected for logged in users
+    if (userId && !orgId) {
+        const orgSelection = new URL("/org-selection", req.url);
+        return NextResponse.redirect(orgSelection);
+    }
+
+    return NextResponse.next();
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};
+```
+
+##### What this file does
+
+In Next.js, `proxy.ts` (called `middleware.ts` in versions before Next.js 16) at the `src/` root level is a **special file** that runs **before every request reaches a page or API route**. Think of it as a **security guard at the entrance** — every visitor (request) must pass through it first, and the guard decides: let them in, redirect them elsewhere, or block them entirely.
+
+This file integrates Clerk authentication into the Next.js request pipeline and enforces three rules:
+1. **Public routes** (sign-in, sign-up) are accessible to everyone
+2. **All other routes** require the user to be logged in
+3. **All protected routes** additionally require the user to have selected an organization
+
+##### Line by line explanation
+
+1. Imports
+
+```ts
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+```
+
+- `clerkMiddleware` — Clerk's middleware wrapper; integrates Clerk's auth state into the Next.js request pipeline so we can read the current user on every request
+- `createRouteMatcher` — Clerk utility that takes an array of URL patterns and returns a function to check whether a given request matches those patterns
+- `NextResponse` — Next.js built-in utility for returning responses from middleware: `NextResponse.next()` lets the request continue, `NextResponse.redirect()` sends the user elsewhere
+
+2. Route matchers
+
+```ts
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+
+const isOrgSelectionRoute = createRouteMatcher(["/org-selection(.*)"]);
+```
+
+- `createRouteMatcher` takes an array of URL patterns and returns a **matcher function**
+- The `(.*)` suffix means "match this path and any sub-paths" — e.g. `/sign-in`, `/sign-in/sso-callback`, `/sign-in/factor-two` all match
+- `isPublicRoute` — a function that returns `true` if the request is for sign-in or sign-up pages
+- `isOrgSelectionRoute` — a function that returns `true` if the request is for the org-selection page
+- These are defined outside the middleware function so they are created **once** and reused on every request (more efficient)
+
+3. The middleware function
+
+```ts
+export default clerkMiddleware(async (auth, req) => {
+    const { userId, orgId } = await auth();
+```
+
+- `clerkMiddleware(...)` — wraps our custom logic, hooking it into Clerk's auth system; this is the **required default export** for the middleware file
+- `auth` — Clerk's auth helper for the current request; calling `await auth()` reads the current auth state from Clerk's session token
+- `req` — the incoming Next.js request object (contains the URL, headers, etc.)
+- `userId` — the ID of the currently logged-in user, or `null` if not logged in
+- `orgId` — the ID of the currently selected organization, or `null` if none is selected
+
+4. Rule 1 — Allow public routes
+
+```ts
+    // Allow public routes
+    if (isPublicRoute(req)) {
+        return NextResponse.next();
+    }
+```
+
+- If the request is for `/sign-in` or `/sign-up`, immediately let it through
+- `NextResponse.next()` means "do nothing, continue to the page as normal"
+- This must come **first** — otherwise a logged-out user trying to reach `/sign-in` would get stuck in a redirect loop
+
+5. Rule 2 — Block unauthenticated users
+
+```ts
+    // Protect non-public routes
+    if (!userId) {
+        await auth.protect();
+    }
+```
+
+- If no `userId` exists, the user is not logged in
+- `auth.protect()` is a Clerk helper that automatically redirects the user to the sign-in page
+- Any route that is not `/sign-in` or `/sign-up` now requires the user to be logged in
+
+6. Rule 3 — Allow the org-selection page
+
+```ts
+    // Allow org selection page for logged in users
+    if (isOrgSelectionRoute(req)) {
+        return NextResponse.next();
+    }
+```
+
+- At this point, we know the user **is** logged in (Rule 2 would have redirected them otherwise)
+- The org-selection page must be accessible even without an org selected — because this is where the user picks their org
+- Without this rule, a logged-in user with no org selected would hit Rule 4 (redirect to `/org-selection`) and then Rule 3 would not exist — causing an infinite redirect loop
+
+7. Rule 4 — Enforce org selection for all protected routes
+
+```ts
+    // For all protected routes (all routes except sign-in, sign-up and org-selection),
+    // ensure org is selected for logged in users
+    if (userId && !orgId) {
+        const orgSelection = new URL("/org-selection", req.url);
+        return NextResponse.redirect(orgSelection);
+    }
+
+    return NextResponse.next();
+```
+
+- If the user is logged in (`userId` exists) but has not selected an org (`!orgId`), redirect them to `/org-selection`
+- `new URL("/org-selection", req.url)` — constructs an absolute URL for the redirect using the current request's base URL
+- `NextResponse.redirect(...)` — sends the browser to the org-selection page
+- The final `return NextResponse.next()` — if all checks pass (user logged in, org selected), let the request through normally
+
+8. The config export
+
+```ts
+export const config = {
+  matcher: [
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
+  ],
+};
+```
+
+- `config.matcher` tells Next.js **which requests should trigger this middleware**
+- Without this, middleware would run on every single request — including Next.js internals and static files like images and CSS — which is wasteful
+- First pattern — runs on all routes **except**:
+  - `_next` — Next.js internal routes (used for hot reloading, build assets)
+  - Static files — `.html`, `.css`, `.js`, `.jpg`, `.webp`, `.png`, `.gif`, `.svg`, `.ttf`, `.woff`, `.ico`, `.csv`, `.docx`, `.xlsx`, `.zip`, `.webmanifest`
+- Second pattern — **always** runs on API routes (`/api/...`) and tRPC routes (`/trpc/...`), regardless of the first pattern
+
+##### The full picture simply
+
+```
+Incoming Request
+       │
+       ▼
+  proxy.ts runs first (middleware)
+       │
+       ├── Is it /sign-in or /sign-up?
+       │       YES → Let it through ✅
+       │
+       ├── Is the user logged in?
+       │       NO  → Redirect to /sign-in 🔒
+       │
+       ├── Is it /org-selection?
+       │       YES → Let it through ✅ (user needs to pick an org)
+       │
+       ├── Is an org selected?
+       │       NO  → Redirect to /org-selection 🏢
+       │
+       └── All checks passed → Let it through ✅
+                │
+                ▼
+          Page / API Route renders
+```
+
+The result is a **two-layer auth gate** enforced on every request:
+- Layer 1: Must be logged in
+- Layer 2: Must have an organization selected
+
 #### Added Sign-in, Sign-up pages (based on Clerk documentation) and org-selection page
 
 #### Clerk Dashboard => Enable Organizations => Select 'Membership Required' => Click 'Enable'; We now have secure authentication & multi-tenancy in the VoiceFoundry app; Middleware Flow => User can only use the app if they login and select an organization
